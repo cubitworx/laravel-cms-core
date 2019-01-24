@@ -21,7 +21,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		require_once(__DIR__.'/../Helpers/page.php');
+		require_once(__DIR__.'/../helpers/page.php');
 	}
 
 }
