@@ -31,6 +31,8 @@ class Page extends Model {
 	}
 
 	public static function upsert(array $doc, array $where = null) {
+		$doc = static::applyMutations(['saving', 'updating'], $doc);
+
 		if (isset($doc['template_view']))
 			$doc['template_id'] = Template::where('view', $doc['template_view'])->first()->id;
 

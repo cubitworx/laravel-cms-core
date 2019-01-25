@@ -13,15 +13,13 @@ use Illuminate\Support\Facades\Log;
 class Page {
 
 	public $page;
+	public $request;
 
-	protected $_data = [];
+	protected $_data;
 
-	public function __construct(Request $request) {
+	public function __construct(Request $request, $url = null, array $data = []) {
 		$this->request = $request;
-		// Cannot use $request->fullUrl() because Laravel sorts the query string parameters by the name & also does not always put / at beginning of path
-		$this->url = $request->server('REQUEST_URI');
-
-		$this->_loadPage();
+		$this->loadPage($url, $data);
 	}
 
 	public function __get($name) {
@@ -43,10 +41,10 @@ class Page {
 						$this->_data['currentPageUrl'] = ($paginator && $paginator->onFirstPage()) ? str_replace('?page=1', '', $this->_url) : $this->_url;
 						break;
 					case 'description':
-						$this->_data['description'] = $this->page->description ? $this->page->description : '';
+						$this->_data['description'] = $this->page->description ?? '';
 						break;
 					case 'heading':
-						$this->_data['heading'] = $this->page->heading ? $this->page->heading : $this->title;
+						$this->_data['heading'] = $this->page->heading ?? $this->title;
 						break;
 					case 'nextPageUrl':
 						$paginator = $this->paginator;
@@ -68,7 +66,10 @@ class Page {
 						$this->_data['title'] = $this->page->title;
 						break;
 					case 'type':
-						$this->_data['type'] = $this->page->type ? $this->page->type : 'website';
+						$this->_data['type'] = $this->page->type ?? 'website';
+						break;
+					case 'url':
+						$this->_data['url'] = $this->page->url;
 						break;
 					default:
 						throw new \Exception('Invalid page metadata key: '.$name);
@@ -101,6 +102,26 @@ class Page {
 		return empty($value);
 	}
 
+	/**
+	 * Retrieve page (with contents). If no URL is provided the current path is used
+	 */
+	public function loadPage($url = null, array $data = []) {
+		if ($url || !$this->page) {
+			$this->_data = $data;
+
+			$this->page = Model\Page::where('url', $url ?? $this->request->path())
+				->with('contents')
+				->firstOrFail();
+
+			$contents = [];
+			foreach ($this->page->contents as $content)
+				$contents[$content['name']] = $content['content'];
+			$this->page->contents = $contents;
+		}
+
+		return $this;
+	}
+
 	public function setBreadcrumbs(array $breadcrumbs) {
 		$this->_data['breadcrumbs'] = array_merge(
 			[['url' => '/', 'title' => 'Home']],
@@ -117,22 +138,6 @@ class Page {
 
 	public function setPaginator(AbstractPaginator $paginator) {
 		$this->_data['paginator'] = $paginator;
-		return $this;
-	}
-
-	/**
-	 * Retrieve page (with contents) for current route
-	 */
-	protected function _loadPage() {
-		if (!$this->page) {
-			$this->page = Model\Page::where('url', $this->url)->with('contents')->firstOrFail();
-
-			$contents = [];
-			foreach ($this->page->contents as $content)
-				$contents[$content['name']] = $content['content'];
-			$this->page->contents = $contents;
-		}
-
 		return $this;
 	}
 

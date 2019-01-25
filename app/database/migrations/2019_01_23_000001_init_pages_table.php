@@ -12,13 +12,27 @@ class InitPagesTable extends Migration {
 	 * @return void
 	 */
 	public function up() {
-		Model\Page::insert([
-			'title' => 'Page title',
+		(new Model\Page([
+			'title' => 'Home page',
 			'url' => '/',
-			'heading' => 'Page heading',
-			'description' => 'Page description',
+			'heading' => 'Home page heading',
+			'description' => 'Home page description',
 			'status' => config('app.status.page.published'),
-		]);
+		]))->save();
+		(new Model\Page([
+			'title' => 'Test-1 title',
+			'url' => '/test-1',
+			'heading' => 'Test-1 heading',
+			'description' => 'Test-1 description',
+			'status' => config('app.status.page.published'),
+		]))->save();
+		(new Model\Page([
+			'title' => 'Test-2 title',
+			'url' => '/test-2',
+			'heading' => 'Test-2 heading',
+			'description' => 'Test-2 description',
+			'status' => config('app.status.page.published'),
+		]))->save();
 	}
 
 	/**
@@ -27,9 +41,7 @@ class InitPagesTable extends Migration {
 	 * @return void
 	 */
 	public function down() {
-		Model\Page::whereIn('url', [
-			'/',
-		])->delete();
+		DB::table('pages')->truncate();
 	}
 
 }
