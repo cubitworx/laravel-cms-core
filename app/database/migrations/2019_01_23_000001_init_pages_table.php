@@ -21,16 +21,23 @@ class InitPagesTable extends Migration {
 		]))->save();
 		(new Model\Page([
 			'title' => 'Test-1 title',
-			'url' => '/test-1',
+			'url' => '/test/1',
 			'heading' => 'Test-1 heading',
 			'description' => 'Test-1 description',
 			'status' => config('app.status.page.published'),
 		]))->save();
 		(new Model\Page([
 			'title' => 'Test-2 title',
-			'url' => '/test-2',
+			'url' => '/test/2',
 			'heading' => 'Test-2 heading',
 			'description' => 'Test-2 description',
+			'status' => config('app.status.page.published'),
+		]))->save();
+		(new Model\Page([
+			'title' => 'Test-relative title',
+			'url' => 'test/relative',
+			'heading' => 'Test-relative heading',
+			'description' => 'Test-relative description',
 			'status' => config('app.status.page.published'),
 		]))->save();
 	}

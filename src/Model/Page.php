@@ -22,7 +22,8 @@ class Page extends Model {
 
 		static::saving(function($model)  {
 			$model->status = $model->status ?? config('status.page.draft');
-			$model->url_hash = $model->url_hash ?? md5($model->url);
+			if (empty($model->url_hash) && !empty($model->url))
+				$model->url_hash = md5($model->url);
 		});
 	}
 
@@ -31,12 +32,10 @@ class Page extends Model {
 	}
 
 	public static function upsert(array $doc, array $where = null) {
-		$doc = static::applyMutations(['saving', 'updating'], $doc);
-
 		if (isset($doc['template_view']))
 			$doc['template_id'] = Template::where('view', $doc['template_view'])->first()->id;
 
-		$result = parent::updateOrCreate($where ? $where : ['url' => $doc['url']], $doc);
+		$result = parent::_upsert($doc, $where ?? ['url' => $doc['url']]);
 
 		if (!empty($doc['contents'])) {
 			foreach ($doc['contents'] as $name => $content) {

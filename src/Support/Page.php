@@ -109,7 +109,7 @@ class Page {
 		if ($url || !$this->page) {
 			$this->_data = $data;
 
-			$this->page = Model\Page::where('url', $url ?? $this->request->path())
+			$this->page = Model\Page::where('url', $url ?? str_replace('//', '/', '/' . $this->request->path()))
 				->with('contents')
 				->firstOrFail();
 

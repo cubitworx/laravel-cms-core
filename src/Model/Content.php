@@ -14,8 +14,7 @@ class Content extends Model {
 	];
 
 	public static function upsert(array $doc, array $where = null) {
-		$doc = static::applyMutations(['saving', 'updating'], $doc);
-		return parent::updateOrCreate($where ? $where : ['page_id' => $doc['page_id'], 'name' => $doc['name']], $doc);
+		return parent::_upsert($doc, $where ?? ['page_id' => $doc['page_id'], 'name' => $doc['name']]);
 	}
 
 }
