@@ -38,7 +38,7 @@ class Page {
 						break;
 					case 'currentPageUrl':
 						$paginator = $this->paginator;
-						$this->_data['currentPageUrl'] = ($paginator && $paginator->onFirstPage()) ? str_replace('?page=1', '', $this->_url) : $this->_url;
+						$this->_data['currentPageUrl'] = ($paginator && $paginator->onFirstPage()) ? str_replace('?page=1', '', $this->url) : $this->url;
 						break;
 					case 'description':
 						$this->_data['description'] = $this->page->description ?? '';
@@ -55,6 +55,9 @@ class Page {
 						break;
 					case 'options':
 						$this->setOptions([]);
+						break;
+					case 'paginator':
+						$this->_data['paginator'] = null;
 						break;
 					case 'previousPageUrl':
 						$paginator = $this->paginator;
@@ -75,8 +78,12 @@ class Page {
 						throw new \Exception('Invalid page metadata key: '.$name);
 				}
 			} catch (\Exception $e) {
-				Log::error("Error building page key: $name", ['exception' => $e]);
-				$this->_data[$name] = '';
+				if (app()->environment('local', 'staging')) {
+					throw $e;
+				} else {
+					Log::error("Error building page key: $name", ['exception' => $e]);
+					$this->_data[$name] = '';
+				}
 			}
 		}
 
@@ -84,17 +91,7 @@ class Page {
 	}
 
 	public function __set($name, $value) {
-		switch($name) {
-			case 'breadcrumbs':
-				$this->setBreadcrumbs($value);
-				break;
-			case 'options':
-				$this->setOptions($value);
-				break;
-			default:
-				$this->_data[$name] = $value;
-				break;
-		}
+		return $this->set($name, $value);
 	}
 
 	public function isEmpty($name) {
@@ -120,6 +117,23 @@ class Page {
 		}
 
 		return $this;
+	}
+
+	public function set($name, $value) {
+		switch($name) {
+			case 'breadcrumbs':
+				$this->setBreadcrumbs($value);
+				break;
+			case 'options':
+				$this->setOptions($value);
+				break;
+			case 'paginator':
+				$this->setPaginator($value);
+				break;
+			default:
+				$this->_data[$name] = $value;
+				break;
+		}
 	}
 
 	public function setBreadcrumbs(array $breadcrumbs) {
